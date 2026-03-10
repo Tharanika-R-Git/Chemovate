@@ -152,32 +152,84 @@ function RiskGauge({ score, alertLevel }) {
   const cfg = ALERT_CONFIG[alertLevel] || ALERT_CONFIG.normal;
   const angle = -135 + (score / 100) * 270;
 
+  const cx = 90;
+  const cy = 110;   // center of the circle
+  const r = 55;
+
+  const startX = cx - r;
+  const startY = cy;
+  const endX = cx + r;
+  const endY = cy;
+
   return (
-    <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <svg width="130" height="130" style={{ position: "absolute" }}>
-        {/* Background arc */}
-        <path d="M 20 100 A 45 45 0 1 1 110 100" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" strokeLinecap="round" />
-        {/* Colored arc */}
-        <path d="M 20 100 A 45 45 0 1 1 110 100" fill="none" stroke={cfg.color}
-          strokeWidth="10" strokeLinecap="round"
-          strokeDasharray={`${(score / 100) * 212} 212`}
-          style={{ filter: `drop-shadow(0 0 6px ${cfg.color})` }} />
-        {/* Needle */}
-        <g transform={`rotate(${angle}, 65, 65)`}>
-          <line x1="65" y1="65" x2="65" y2="30" stroke={cfg.color} strokeWidth="2.5" strokeLinecap="round" />
-        </g>
-        <circle cx="65" cy="65" r="5" fill={cfg.color} />
-      </svg>
-      <div style={{ textAlign: "center", zIndex: 1, marginTop: 10 }}>
-        <div style={{ color: cfg.color, fontSize: 26, fontWeight: 800, fontFamily: "'DM Mono', monospace", lineHeight: 1, textShadow: cfg.glow }}>
+    <div style={{ width: 180, height: 180 }}>
+      <svg width="180" height="180" viewBox="0 0 180 180">
+        {/* Score above */}
+        <text
+          x={cx}
+          y="34"
+          textAnchor="middle"
+          fill={cfg.color}
+          fontSize="30"
+          fontWeight="800"
+          fontFamily="monospace"
+          style={{ filter: `drop-shadow(0 0 8px ${cfg.color})` }}
+        >
           {score}
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase" }}>RISK SCORE</div>
-      </div>
+        </text>
+
+        <text
+          x={cx}
+          y="50"
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.38)"
+          fontSize="8"
+          fontFamily="monospace"
+          letterSpacing="2"
+        >
+          RISK SCORE
+        </text>
+
+        {/* Background arc */}
+        <path
+          d={`M ${startX} ${startY} A ${r} ${r} 0 0 1 ${endX} ${endY}`}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="12"
+          strokeLinecap="round"
+        />
+
+        {/* Active arc */}
+        <path
+          d={`M ${startX} ${startY} A ${r} ${r} 0 0 1 ${endX} ${endY}`}
+          fill="none"
+          stroke={cfg.color}
+          strokeWidth="12"
+          strokeLinecap="round"
+          pathLength="100"
+          strokeDasharray={`${score} 100`}
+          style={{ filter: `drop-shadow(0 0 8px ${cfg.color})` }}
+        />
+
+        {/* Needle */}
+        <g transform={`rotate(${angle}, ${cx}, ${cy})`}>
+          <line
+            x1={cx}
+            y1={cy}
+            x2={cx}
+            y2={cy - 38}
+            stroke={cfg.color}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </g>
+
+        {/* Center pivot */}
+        <circle cx={cx} cy={cy} r="6" fill={cfg.color} />
+      </svg>
     </div>
   );
 }
-
 function AlertBanner({ patients }) {
   const critical = patients.filter(p => p.alertLevel === "sepsis");
   const concern = patients.filter(p => p.alertLevel === "concern");
